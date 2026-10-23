@@ -77,18 +77,18 @@ struct ReflexLabView: View {
 
                         Text("Reflex Lab")
                             .font(.system(size: 32, weight: .bold, design: .rounded))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(NeuroTapStyle.primaryText)
 
                         Text("How quickly can you react?")
                             .font(.system(size: 17, weight: .medium))
-                            .foregroundStyle(.white.opacity(0.9))
+                            .foregroundStyle(NeuroTapStyle.primaryText.opacity(0.9))
 
                         Text(
                             "Wait for the green signal, then tap as fast as you can. " +
                             "React too early and that round counts as a false start."
                         )
                         .font(.system(size: 14))
-                        .foregroundStyle(.white.opacity(0.65))
+                        .foregroundStyle(NeuroTapStyle.primaryText.opacity(0.65))
                         .lineSpacing(4)
                     }
 
@@ -118,7 +118,7 @@ struct ReflexLabView: View {
                             Image(systemName: "arrow.right")
                         }
                         .font(.system(size: 16, weight: .bold))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(NeuroTapStyle.primaryText)
                         .padding(19)
                         .background(violet)
                         .clipShape(RoundedRectangle(cornerRadius: 18))
@@ -128,12 +128,12 @@ struct ReflexLabView: View {
                     VStack(alignment: .leading, spacing: 14) {
                         Text("Previous Sessions")
                             .font(.system(size: 20, weight: .bold))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(NeuroTapStyle.primaryText)
 
                         if history.isEmpty {
                             Text("Your completed games will appear here.")
                                 .font(.system(size: 13))
-                                .foregroundStyle(.white.opacity(0.6))
+                                .foregroundStyle(NeuroTapStyle.primaryText.opacity(0.6))
                                 .padding(18)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .background(surface)
@@ -147,7 +147,7 @@ struct ReflexLabView: View {
 
                     Text("For practice and entertainment, not medical diagnosis.")
                         .font(.system(size: 11))
-                        .foregroundStyle(.white.opacity(0.45))
+                        .foregroundStyle(NeuroTapStyle.primaryText.opacity(0.45))
                 }
                 .padding(22)
             }
@@ -162,7 +162,7 @@ struct ReflexLabView: View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Personal Insights")
                 .font(.system(size: 22, weight: .bold))
-                .foregroundStyle(.white)
+                .foregroundStyle(NeuroTapStyle.primaryText)
 
             LazyVGrid(
                 columns: [
@@ -199,7 +199,7 @@ struct ReflexLabView: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text("Recent comparison")
                     .font(.system(size: 16, weight: .bold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(NeuroTapStyle.primaryText)
 
                 Text(comparisonText)
                     .font(.system(size: 14, weight: .semibold))
@@ -207,7 +207,7 @@ struct ReflexLabView: View {
 
                 Text("Compares the two most recent sessions with valid reaction times.")
                     .font(.system(size: 12))
-                    .foregroundStyle(.white.opacity(0.55))
+                    .foregroundStyle(NeuroTapStyle.primaryText.opacity(0.55))
             }
             .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -217,7 +217,7 @@ struct ReflexLabView: View {
             VStack(alignment: .leading, spacing: 12) {
                 Text("Reaction-time trend")
                     .font(.system(size: 16, weight: .bold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(NeuroTapStyle.primaryText)
 
                 if recentValidSessions.count >= 2 {
                     Chart(recentValidSessions) { session in
@@ -244,7 +244,7 @@ struct ReflexLabView: View {
                 } else {
                     Text("Complete at least two sessions with valid reactions to see your trend.")
                         .font(.system(size: 13))
-                        .foregroundStyle(.white.opacity(0.6))
+                        .foregroundStyle(NeuroTapStyle.primaryText.opacity(0.6))
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.vertical, 24)
                 }
@@ -267,7 +267,7 @@ struct ReflexLabView: View {
             Text(label)
                 .font(.system(size: 10, weight: .bold))
                 .tracking(1.2)
-                .foregroundStyle(.white.opacity(0.55))
+                .foregroundStyle(NeuroTapStyle.primaryText.opacity(0.55))
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(17)
@@ -285,7 +285,7 @@ struct ReflexLabView: View {
                     )
                 )
                 .font(.system(size: 12))
-                .foregroundStyle(.white.opacity(0.6))
+                .foregroundStyle(NeuroTapStyle.primaryText.opacity(0.6))
 
                 Text(
                     session.medianReactionMilliseconds.map {
@@ -293,7 +293,7 @@ struct ReflexLabView: View {
                     } ?? "No valid reactions"
                 )
                 .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(.white)
+                .foregroundStyle(NeuroTapStyle.primaryText)
             }
 
             Spacer()
@@ -342,7 +342,7 @@ struct ReflexGameView: View {
                         dismiss()
                     } label: {
                         Label("Exit", systemImage: "chevron.left")
-                            .foregroundStyle(.white.opacity(0.8))
+                            .foregroundStyle(NeuroTapStyle.primaryText.opacity(0.8))
                     }
                     .buttonStyle(.plain)
 
@@ -351,7 +351,7 @@ struct ReflexGameView: View {
                     Text("REFLEX RUSH")
                         .font(.system(size: 11, weight: .bold))
                         .tracking(2)
-                        .foregroundStyle(.white.opacity(0.6))
+                        .foregroundStyle(NeuroTapStyle.primaryText.opacity(0.6))
                 }
 
                 if engine.phase != .idle && engine.phase != .finished {
@@ -359,7 +359,7 @@ struct ReflexGameView: View {
                         Text("ROUND \(engine.currentRound) OF \(engine.totalRounds)")
                             .font(.system(size: 13, weight: .bold))
                             .tracking(1.5)
-                            .foregroundStyle(.white.opacity(0.65))
+                            .foregroundStyle(NeuroTapStyle.primaryText.opacity(0.65))
 
                         ProgressView(
                             value: Double(engine.results.count),
@@ -403,18 +403,18 @@ struct ReflexGameView: View {
 
                 Text("Ready to react?")
                     .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(NeuroTapStyle.primaryText)
 
                 Text("Complete five rounds. Don't tap until the signal turns green.")
                     .font(.system(size: 15))
                     .multilineTextAlignment(.center)
-                    .foregroundStyle(.white.opacity(0.65))
+                    .foregroundStyle(NeuroTapStyle.primaryText.opacity(0.65))
 
                 Button("Begin") {
                     engine.start()
                 }
                 .font(.system(size: 16, weight: .bold))
-                .foregroundStyle(.white)
+                .foregroundStyle(NeuroTapStyle.primaryText)
                 .padding(.horizontal, 40)
                 .padding(.vertical, 16)
                 .background(Color(red: 0.60, green: 0.43, blue: 1.0))
@@ -441,7 +441,7 @@ struct ReflexGameView: View {
 
                         Image(systemName: "hand.tap.fill")
                             .font(.system(size: 48, weight: .medium))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(NeuroTapStyle.primaryText)
                     }
                 }
                 .buttonStyle(.plain)
@@ -457,7 +457,7 @@ struct ReflexGameView: View {
                         : "Don't tap yet. Be patient."
                 )
                 .font(.system(size: 14))
-                .foregroundStyle(.white.opacity(0.65))
+                .foregroundStyle(NeuroTapStyle.primaryText.opacity(0.65))
             }
 
         case .roundResult:
@@ -478,7 +478,7 @@ struct ReflexGameView: View {
                         : "\(engine.lastReactionMilliseconds ?? 0) ms"
                 )
                 .font(.system(size: 32, weight: .bold, design: .rounded))
-                .foregroundStyle(.white)
+                .foregroundStyle(NeuroTapStyle.primaryText)
 
                 Text(
                     engine.lastWasFalseStart
@@ -487,7 +487,7 @@ struct ReflexGameView: View {
                 )
                 .font(.system(size: 14))
                 .multilineTextAlignment(.center)
-                .foregroundStyle(.white.opacity(0.65))
+                .foregroundStyle(NeuroTapStyle.primaryText.opacity(0.65))
             }
 
         case .finished:
@@ -503,7 +503,7 @@ struct ReflexGameView: View {
 
             Text("Session complete")
                 .font(.system(size: 27, weight: .bold, design: .rounded))
-                .foregroundStyle(.white)
+                .foregroundStyle(NeuroTapStyle.primaryText)
 
             if let median = engine.medianReactionMilliseconds {
                 Text("\(median) ms")
@@ -512,10 +512,10 @@ struct ReflexGameView: View {
 
                 Text("Median reaction time")
                     .font(.system(size: 14))
-                    .foregroundStyle(.white.opacity(0.65))
+                    .foregroundStyle(NeuroTapStyle.primaryText.opacity(0.65))
             } else {
                 Text("No valid reaction times recorded.")
-                    .foregroundStyle(.white.opacity(0.7))
+                    .foregroundStyle(NeuroTapStyle.primaryText.opacity(0.7))
             }
 
             VStack(spacing: 10) {
@@ -539,7 +539,7 @@ struct ReflexGameView: View {
                 ForEach(engine.results) { result in
                     HStack {
                         Text("Round \(result.roundNumber)")
-                            .foregroundStyle(.white.opacity(0.7))
+                            .foregroundStyle(NeuroTapStyle.primaryText.opacity(0.7))
 
                         Spacer()
 
@@ -564,7 +564,7 @@ struct ReflexGameView: View {
             } label: {
                 Label("Play again", systemImage: "arrow.clockwise")
                     .font(.system(size: 15, weight: .bold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(NeuroTapStyle.primaryText)
                     .frame(maxWidth: .infinity)
                     .padding(16)
                     .background(
@@ -580,12 +580,12 @@ struct ReflexGameView: View {
         VStack(spacing: 5) {
             Text(value)
                 .font(.system(size: 20, weight: .bold))
-                .foregroundStyle(.white)
+                .foregroundStyle(NeuroTapStyle.primaryText)
 
             Text(title)
                 .font(.system(size: 9, weight: .bold))
                 .tracking(1)
-                .foregroundStyle(.white.opacity(0.55))
+                .foregroundStyle(NeuroTapStyle.primaryText.opacity(0.55))
         }
         .frame(maxWidth: .infinity)
         .padding(12)
@@ -596,12 +596,12 @@ struct ReflexGameView: View {
     private func resultRow(_ title: String, value: String) -> some View {
         HStack {
             Text(title)
-                .foregroundStyle(.white.opacity(0.65))
+                .foregroundStyle(NeuroTapStyle.primaryText.opacity(0.65))
 
             Spacer()
 
             Text(value)
-                .foregroundStyle(.white)
+                .foregroundStyle(NeuroTapStyle.primaryText)
                 .fontWeight(.semibold)
         }
         .font(.system(size: 14))

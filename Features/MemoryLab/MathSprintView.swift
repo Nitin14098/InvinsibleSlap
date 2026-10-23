@@ -112,56 +112,49 @@ private enum MathQuestionGenerator {
         switch level {
         case .easy:
             return makeEasy()
-
         case .normal:
             return makeNormal()
-
         case .hard:
             return makeHard()
         }
     }
 
+    // Three numeric operands
     private static func makeEasy() -> MathQuestion {
         let a = Int.random(in: 2...30)
         let b = Int.random(in: 2...30)
-
-        if Bool.random() {
-            return MathQuestion(
-                expression: "\(a) + \(b)",
-                answer: a + b,
-                level: .easy
-            )
-        }
-
-        let larger = max(a, b)
-        let smaller = min(a, b)
+        let total = a + b
+        let c = Int.random(in: 2...min(30, total))
 
         return MathQuestion(
-            expression: "\(larger) − \(smaller)",
-            answer: larger - smaller,
+            expression: "\(a) + \(b) − \(c)",
+            answer: total - c,
             level: .easy
         )
     }
 
+    // Three numeric operands
     private static func makeNormal() -> MathQuestion {
         switch Int.random(in: 1...3) {
         case 1:
             let a = Int.random(in: 3...15)
             let b = Int.random(in: 3...12)
+            let c = Int.random(in: 2...20)
 
             return MathQuestion(
-                expression: "\(a) × \(b)",
-                answer: a * b,
+                expression: "\(a) × \(b) + \(c)",
+                answer: a * b + c,
                 level: .normal
             )
 
         case 2:
             let divisor = Int.random(in: 2...12)
             let quotient = Int.random(in: 2...15)
+            let addend = Int.random(in: 10...30)
 
             return MathQuestion(
-                expression: "\(divisor * quotient) ÷ \(divisor)",
-                answer: quotient,
+                expression: "(\(divisor * quotient) ÷ \(divisor)) + \(addend)",
+                answer: quotient + addend,
                 level: .normal
             )
 
@@ -178,6 +171,7 @@ private enum MathQuestionGenerator {
         }
     }
 
+    // Every hard question contains at least three numeric operands.
     private static func makeHard() -> MathQuestion {
         switch Int.random(in: 1...4) {
         case 1:
@@ -282,6 +276,10 @@ struct MathSprintView: View {
     @State private var question: MathQuestion?
     @State private var answerInput = ""
 
+    @State private var isShowingQuestion = false
+    @State private var revealTask: Task<Void, Never>?
+    @State private var revealDuration: Double = 3.5
+
     @State private var score = 0
     @State private var correctAnswers = 0
     @State private var questionsAnswered = 0
@@ -295,11 +293,21 @@ struct MathSprintView: View {
 
     private let duration = 60
 
+    // Viewing time decreases every 10 seconds.
+    private var baseRevealTime: Double {
+        let elapsed = duration - timeRemaining
+        let reduction = Double(elapsed / 10) * 0.35
+        return max(1.0, 3.5 - reduction)
+    }
+
     private var accuracy: Int {
         guard questionsAnswered > 0 else { return 0 }
+
         return Int(
-            (Double(correctAnswers) /
-             Double(questionsAnswered) * 100).rounded()
+            (
+                Double(correctAnswers) /
+                Double(questionsAnswered) * 100
+            ).rounded()
         )
     }
 
@@ -324,6 +332,7 @@ struct MathSprintView: View {
         .toolbar(.hidden, for: .navigationBar)
         .onDisappear {
             timerTask?.cancel()
+            revealTask?.cancel()
         }
     }
 
@@ -333,6 +342,7 @@ struct MathSprintView: View {
         HStack {
             Button {
                 timerTask?.cancel()
+                revealTask?.cancel()
                 dismiss()
             } label: {
                 HStack(spacing: 5) {
@@ -340,7 +350,7 @@ struct MathSprintView: View {
                     Text("Back")
                 }
                 .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(.white)
+                .foregroundStyle(NeuroTapStyle.primaryText)
             }
             .buttonStyle(.plain)
 
@@ -362,7 +372,7 @@ struct MathSprintView: View {
             VStack(alignment: .leading, spacing: 20) {
                 Text("Think fast.")
                     .font(.system(size: 34, weight: .bold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(NeuroTapStyle.primaryText)
 
                 Text("Solve as many questions as you can in 60 seconds.")
                     .font(.subheadline)
@@ -385,7 +395,7 @@ struct MathSprintView: View {
                             VStack(alignment: .leading, spacing: 5) {
                                 Text(option.rawValue)
                                     .font(.headline)
-                                    .foregroundStyle(.white)
+                                    .foregroundStyle(NeuroTapStyle.primaryText)
 
                                 Text(option.description)
                                     .font(.caption)
@@ -450,14 +460,12 @@ struct MathSprintView: View {
                         .tracking(1.3)
                         .foregroundStyle(NeuroTapStyle.muted)
 
-                    ForEach(
-                        Array(history.prefix(3))
-                    ) { session in
+                    ForEach(Array(history.prefix(3))) { session in
                         HStack {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text("\(session.mode) Mode")
                                     .font(.headline)
-                                    .foregroundStyle(.white)
+                                    .foregroundStyle(NeuroTapStyle.primaryText)
 
                                 Text(
                                     "\(session.correctAnswers) correct · " +
@@ -522,16 +530,25 @@ struct MathSprintView: View {
                         .tracking(2)
                         .foregroundStyle(question.level.color)
 
-                    Text(question.expression)
-                        .font(.system(size: 37, weight: .bold))
-                        .monospacedDigit()
-                        .minimumScaleFactor(0.6)
-                        .lineLimit(1)
-                        .foregroundStyle(.white)
+                    Text(
+                        isShowingQuestion
+                            ? question.expression
+                            : "Expression hidden"
+                    )
+                    .font(.system(size: 32, weight: .bold))
+                    .monospacedDigit()
+                    .minimumScaleFactor(0.6)
+                    .lineLimit(1)
+                    .foregroundStyle(NeuroTapStyle.primaryText)
+                    .contentTransition(.opacity)
 
-                    Text("What's the answer?")
-                        .font(.subheadline)
-                        .foregroundStyle(NeuroTapStyle.muted)
+                    Text(
+                        isShowingQuestion
+                            ? "Memorize the calculation"
+                            : "Solve it from memory"
+                    )
+                    .font(.subheadline)
+                    .foregroundStyle(NeuroTapStyle.muted)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 30)
@@ -543,7 +560,8 @@ struct MathSprintView: View {
                 .font(.system(size: 25, weight: .semibold))
                 .keyboardType(.numberPad)
                 .multilineTextAlignment(.center)
-                .foregroundStyle(.white)
+                .disabled(isShowingQuestion)
+                .foregroundStyle(NeuroTapStyle.primaryText)
                 .padding(17)
                 .background(NeuroTapStyle.surface)
                 .clipShape(RoundedRectangle(cornerRadius: 14))
@@ -565,19 +583,26 @@ struct MathSprintView: View {
                     )
             }
             .buttonStyle(.plain)
-            .disabled(answerInput.trimmingCharacters(
-                in: .whitespacesAndNewlines
-            ).isEmpty)
+            .disabled(
+                isShowingQuestion ||
+                answerInput.trimmingCharacters(
+                    in: .whitespacesAndNewlines
+                ).isEmpty
+            )
 
-            Text(feedback.isEmpty ? "Every correct answer earns 10 points." : feedback)
-                .font(.subheadline)
-                .foregroundStyle(
-                    feedback.isEmpty
-                        ? NeuroTapStyle.muted
-                        : feedbackColor
-                )
-                .multilineTextAlignment(.center)
-                .frame(minHeight: 22)
+            Text(
+                feedback.isEmpty
+                    ? "Every correct answer earns 10 points."
+                    : feedback
+            )
+            .font(.subheadline)
+            .foregroundStyle(
+                feedback.isEmpty
+                    ? NeuroTapStyle.muted
+                    : feedbackColor
+            )
+            .multilineTextAlignment(.center)
+            .frame(minHeight: 22)
 
             Spacer(minLength: 10)
         }
@@ -595,7 +620,7 @@ struct MathSprintView: View {
 
             Text("Sprint Complete")
                 .font(.system(size: 30, weight: .bold))
-                .foregroundStyle(.white)
+                .foregroundStyle(NeuroTapStyle.primaryText)
 
             Text("\(score) points")
                 .font(.system(size: 40, weight: .bold))
@@ -652,6 +677,8 @@ struct MathSprintView: View {
         .frame(maxWidth: .infinity)
     }
 
+    // MARK: Shared Stat Box
+
     private func statBox(
         title: String,
         value: String,
@@ -677,8 +704,53 @@ struct MathSprintView: View {
 
     // MARK: Game Logic
 
+    private func presentNextQuestion() {
+        revealTask?.cancel()
+
+        question = MathQuestionGenerator.generate(for: mode)
+        answerInput = ""
+        isShowingQuestion = true
+
+        let complexityBonus: Double
+
+        switch question?.level {
+        case .some(.easy):
+            complexityBonus = 0.0
+        case .some(.normal):
+            complexityBonus = 0.6
+        case .some(.hard):
+            complexityBonus = 1.2
+        case .none:
+            complexityBonus = 0.0
+        }
+
+        revealDuration = min(
+            5.0,
+            baseRevealTime + complexityBonus
+        )
+
+        revealTask = Task { @MainActor in
+            do {
+                try await Task.sleep(
+                    nanoseconds: UInt64(
+                        revealDuration * 1_000_000_000
+                    )
+                )
+            } catch {
+                return
+            }
+
+            guard !Task.isCancelled, isPlaying else {
+                return
+            }
+
+            isShowingQuestion = false
+        }
+    }
+
     private func startGame() {
         timerTask?.cancel()
+        revealTask?.cancel()
 
         score = 0
         correctAnswers = 0
@@ -686,16 +758,20 @@ struct MathSprintView: View {
         timeRemaining = duration
         answerInput = ""
         feedback = ""
+        feedbackColor = .white
         sessionSaved = false
 
-        question = MathQuestionGenerator.generate(for: mode)
         isFinished = false
         isPlaying = true
+
+        presentNextQuestion()
 
         timerTask = Task { @MainActor in
             while !Task.isCancelled && timeRemaining > 0 {
                 do {
-                    try await Task.sleep(nanoseconds: 1_000_000_000)
+                    try await Task.sleep(
+                        nanoseconds: 1_000_000_000
+                    )
                 } catch {
                     return
                 }
@@ -715,7 +791,10 @@ struct MathSprintView: View {
     }
 
     private func submitAnswer() {
-        guard isPlaying, let question else { return }
+        // Prevent submission while the expression is visible.
+        guard isPlaying, !isShowingQuestion, let question else {
+            return
+        }
 
         let cleanedAnswer = answerInput.trimmingCharacters(
             in: .whitespacesAndNewlines
@@ -740,13 +819,16 @@ struct MathSprintView: View {
         }
 
         answerInput = ""
-        self.question = MathQuestionGenerator.generate(for: mode)
+        presentNextQuestion()
     }
 
     private func finishGame() {
         guard isPlaying else { return }
 
         timerTask?.cancel()
+        revealTask?.cancel()
+        isShowingQuestion = false
+
         isPlaying = false
         isFinished = true
 

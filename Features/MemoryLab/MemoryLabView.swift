@@ -1,12 +1,17 @@
 
+
 import SwiftUI
 
 struct MemoryLabView: View {
+    @Environment(\.dismiss) private var dismiss
+
     @State private var showingGame = false
     @State private var showingPairMatching = false
-    @State private var history = MemoryHistoryStore.load()
     @State private var showingMathSprint = false
-    @Environment(\.dismiss) private var dismiss
+    @State private var showingPatternRecall = false
+    @State private var showingNumberLogic = false
+
+    @State private var history = MemoryHistoryStore.load()
 
     private let activities: [MemoryActivity] = [
         .init(
@@ -39,7 +44,7 @@ struct MemoryLabView: View {
             category: "VISUAL MEMORY",
             icon: "circle.grid.3x3",
             color: .pink,
-            isReady: false
+            isReady: true
         ),
         .init(
             title: "Number Logic",
@@ -47,7 +52,7 @@ struct MemoryLabView: View {
             category: "REASONING",
             icon: "puzzlepiece.extension",
             color: .green,
-            isReady: false
+            isReady: true
         )
     ]
 
@@ -58,23 +63,17 @@ struct MemoryLabView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 22) {
                     header
-                    
+
                     Button {
                         dismiss()
                     } label: {
-                        HStack(spacing: 6) {
-                            Image(systemName: "chevron.left")
-                                .font(.system(size: 16, weight: .medium))
-
-                            Text("Back")
-                                .font(.system(size: 16, weight: .medium))
-                        }
-                        .foregroundStyle(.blue)
+                        Label("Back", systemImage: "chevron.left")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundStyle(NeuroTapStyle.cyan)
                     }
                     .buttonStyle(.plain)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.top, 8)
-                
+                    .padding(.top, 4)
+
                     HStack(spacing: 14) {
                         Image(systemName: "shuffle")
                             .font(.title2.bold())
@@ -83,11 +82,13 @@ struct MemoryLabView: View {
                         VStack(alignment: .leading, spacing: 5) {
                             Text("Unpredictable by design")
                                 .font(.headline)
-                                .foregroundStyle(.white)
+                                .foregroundStyle(NeuroTapStyle.primaryText)
 
-                            Text("7–10 rounds, 3–12 digits, and less time each round.")
-                                .font(.caption)
-                                .foregroundStyle(NeuroTapStyle.muted)
+                            Text(
+                                "7–10 rounds, 3–12 digits, and less time each round."
+                            )
+                            .font(.caption)
+                            .foregroundStyle(NeuroTapStyle.muted)
                         }
                     }
                     .padding(16)
@@ -100,40 +101,25 @@ struct MemoryLabView: View {
 
                         ForEach(activities) { activity in
                             Button {
-                                if activity.title == "Sequence Recall" {
-                                    showingGame = true
-                                } else if activity.title == "Pair Matching" {
-                                    showingPairMatching = true
-                                } else if activity.title == "Math Sprint" {
-                                    showingMathSprint = true
-                                }
+                                openActivity(activity)
                             } label: {
                                 activityCard(activity)
                             }
                             .buttonStyle(.plain)
                             .disabled(!activity.isReady)
-                            
-                            .sheet(isPresented: $showingPairMatching) {
-                                PairMatchingView()
-                                    .preferredColorScheme(.dark)
-                            }
-                            .sheet(isPresented: $showingMathSprint) {
-                                MathSprintView()
-                                    .preferredColorScheme(.dark)
-                                    }
                         }
                     }
 
                     if !history.isEmpty {
                         VStack(alignment: .leading, spacing: 14) {
-                            sectionTitle("RECENT RESULTS")
+                            sectionTitle("RECENT SEQUENCE RECALL RESULTS")
 
                             ForEach(Array(history.prefix(3))) { session in
                                 HStack {
                                     VStack(alignment: .leading, spacing: 5) {
                                         Text(session.activity)
                                             .font(.headline)
-                                            .foregroundStyle(.white)
+                                            .foregroundStyle(NeuroTapStyle.primaryText)
 
                                         Text(
                                             "\(session.totalRounds) rounds · " +
@@ -150,7 +136,7 @@ struct MemoryLabView: View {
                                             "\(session.correctRounds)/\(session.totalRounds)"
                                         )
                                         .font(.headline)
-                                        .foregroundStyle(.white)
+                                        .foregroundStyle(NeuroTapStyle.primaryText)
 
                                         Text("\(session.accuracyPercentage)%")
                                             .font(.caption.bold())
@@ -168,6 +154,8 @@ struct MemoryLabView: View {
             }
         }
         .toolbar(.hidden, for: .navigationBar)
+
+        // Keep sheets on the main screen, not inside ForEach.
         .sheet(
             isPresented: $showingGame,
             onDismiss: {
@@ -175,29 +163,73 @@ struct MemoryLabView: View {
             }
         ) {
             SequenceRecallView()
-                .preferredColorScheme(.dark)
+        }
+        .sheet(isPresented: $showingPairMatching) {
+            PairMatchingView()
+        }
+        .sheet(isPresented: $showingMathSprint) {
+            MathSprintView()
+        }
+        .sheet(isPresented: $showingPatternRecall) {
+            PatternRecallView()
+        }
+        .sheet(isPresented: $showingNumberLogic) {
+            NumberLogicView()
         }
         .onAppear {
             history = MemoryHistoryStore.load()
         }
     }
 
+    // MARK: Header
+
     private var header: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Label("NEUROTAP / TRAIN", systemImage: "brain.head.profile")
-                .font(.caption.bold())
-                .tracking(1.5)
-                .foregroundStyle(NeuroTapStyle.muted)
+            Label(
+                "NEUROTAP / TRAIN",
+                systemImage: "brain.head.profile"
+            )
+            .font(.caption.bold())
+            .tracking(1.5)
+            .foregroundStyle(NeuroTapStyle.muted)
 
             Text("Memory Lab")
                 .font(.system(size: 34, weight: .bold))
-                .foregroundStyle(.white)
+                .foregroundStyle(NeuroTapStyle.primaryText)
 
-            Text("Test your recall under unpredictable difficulty and increasing time pressure.")
-                .font(.subheadline)
-                .foregroundStyle(NeuroTapStyle.muted)
+            Text(
+                "Test your recall under unpredictable difficulty and increasing time pressure."
+            )
+            .font(.subheadline)
+            .foregroundStyle(NeuroTapStyle.muted)
         }
     }
+
+    // MARK: Activity Routing
+
+    private func openActivity(_ activity: MemoryActivity) {
+        switch activity.title {
+        case "Sequence Recall":
+            showingGame = true
+
+        case "Pair Matching":
+            showingPairMatching = true
+
+        case "Math Sprint":
+            showingMathSprint = true
+
+        case "Pattern Recall":
+            showingPatternRecall = true
+
+        case "Number Logic":
+            showingNumberLogic = true
+
+        default:
+            break
+        }
+    }
+
+    // MARK: Reusable UI
 
     private func sectionTitle(_ title: String) -> some View {
         Text(title)
@@ -225,7 +257,7 @@ struct MemoryLabView: View {
 
                 Text(activity.title)
                     .font(.headline)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(NeuroTapStyle.primaryText)
 
                 Text(activity.subtitle)
                     .font(.caption)
@@ -239,15 +271,19 @@ struct MemoryLabView: View {
                 }
             }
 
-            Spacer()
+            Spacer(minLength: 4)
 
-            Image(systemName: activity.isReady
-                  ? "arrow.right.circle.fill"
-                  : "lock.circle")
-                .font(.title3)
-                .foregroundStyle(
-                    activity.isReady ? activity.color : NeuroTapStyle.muted
-                )
+            Image(
+                systemName: activity.isReady
+                    ? "arrow.right.circle.fill"
+                    : "lock.circle"
+            )
+            .font(.title3)
+            .foregroundStyle(
+                activity.isReady
+                    ? activity.color
+                    : NeuroTapStyle.muted
+            )
         }
         .padding(15)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -255,10 +291,12 @@ struct MemoryLabView: View {
         .clipShape(RoundedRectangle(cornerRadius: 18))
         .overlay {
             RoundedRectangle(cornerRadius: 18)
-                .strokeBorder(.white.opacity(0.06), lineWidth: 1)
+                .strokeBorder(NeuroTapStyle.outline, lineWidth: 1)
         }
     }
 }
+
+// MARK: - Activity Model
 
 private struct MemoryActivity: Identifiable {
     let id = UUID()
@@ -288,8 +326,9 @@ private struct SequenceRecallView: View {
     @State private var revealTask: Task<Void, Never>?
     @State private var revealDeadline = Date()
     @State private var revealDuration: Double = 4.0
+    @State private var sessionSaved = false
 
-    private enum GamePhase {
+    private enum GamePhase: Equatable {
         case intro
         case showing
         case answering
@@ -306,8 +345,9 @@ private struct SequenceRecallView: View {
         return 4.0 - (progress * 2.6)
     }
 
+
     var body: some View {
-        ZStack {
+        ZStack(alignment: .topTrailing) {
             NeuroTapStyle.background.ignoresSafeArea()
 
             ScrollView {
@@ -328,15 +368,40 @@ private struct SequenceRecallView: View {
                     }
                 }
                 .padding(24)
+                .padding(.top, 36)
                 .frame(maxWidth: 520)
                 .frame(maxWidth: .infinity)
             }
+
+            Button {
+                revealTask?.cancel()
+                dismiss()
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundStyle(NeuroTapStyle.primaryText)
+                    .frame(width: 36, height: 36)
+                    .background(NeuroTapStyle.surface)
+                    .clipShape(Circle())
+                    .overlay {
+                        Circle()
+                            .strokeBorder(
+                                .white.opacity(0.1),
+                                lineWidth: 1
+                            )
+                    }
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Exit Sequence Recall")
+            .padding(.top, 12)
+            .padding(.trailing, 20)
         }
         .toolbar(.hidden, for: .navigationBar)
         .onDisappear {
             revealTask?.cancel()
         }
     }
+
 
     private var header: some View {
         VStack(spacing: 8) {
@@ -347,7 +412,7 @@ private struct SequenceRecallView: View {
 
             Text("Sequence Recall")
                 .font(.system(size: 30, weight: .bold))
-                .foregroundStyle(.white)
+                .foregroundStyle(NeuroTapStyle.primaryText)
 
             if phase != .intro && phase != .finished {
                 Text("ROUND \(round) OF \(totalRounds)")
@@ -366,7 +431,7 @@ private struct SequenceRecallView: View {
 
             Text("Remember the digits")
                 .font(.title2.bold())
-                .foregroundStyle(.white)
+                .foregroundStyle(NeuroTapStyle.primaryText)
 
             Text("Every round is unpredictable. You may get 12 digits immediately, and your memorisation time will shrink with each round.")
                 .font(.body)
@@ -411,7 +476,7 @@ private struct SequenceRecallView: View {
                 .monospacedDigit()
                 .minimumScaleFactor(0.6)
                 .lineLimit(1)
-                .foregroundStyle(.white)
+                .foregroundStyle(NeuroTapStyle.primaryText)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 38)
                 .padding(.horizontal, 8)
@@ -449,7 +514,7 @@ private struct SequenceRecallView: View {
 
             Text("Enter the sequence")
                 .font(.title2.bold())
-                .foregroundStyle(.white)
+                .foregroundStyle(NeuroTapStyle.primaryText)
 
             Text("The digits are hidden. Enter every digit in its original order.")
                 .font(.subheadline)
@@ -506,7 +571,7 @@ private struct SequenceRecallView: View {
                 Text(sequence.map(String.init).joined(separator: " "))
                     .font(.system(size: 27, weight: .bold, design: .rounded))
                     .tracking(3)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(NeuroTapStyle.primaryText)
                     .minimumScaleFactor(0.6)
                     .lineLimit(1)
             }
@@ -539,7 +604,7 @@ private struct SequenceRecallView: View {
 
             Text("Challenge Complete")
                 .font(.title.bold())
-                .foregroundStyle(.white)
+                .foregroundStyle(NeuroTapStyle.primaryText)
 
             Text("\(correctRounds) / \(totalRounds) correct")
                 .font(.title2.bold())
@@ -594,7 +659,7 @@ private struct SequenceRecallView: View {
     private func instruction(_ text: String) -> some View {
         Label(text, systemImage: "checkmark.circle.fill")
             .font(.subheadline)
-            .foregroundStyle(.white)
+            .foregroundStyle(NeuroTapStyle.primaryText)
             .labelStyle(.titleAndIcon)
     }
 
@@ -608,7 +673,7 @@ private struct SequenceRecallView: View {
 
             Text(value)
                 .font(.title3.bold())
-                .foregroundStyle(.white)
+                .foregroundStyle(NeuroTapStyle.primaryText)
                 .minimumScaleFactor(0.7)
                 .lineLimit(1)
         }
@@ -648,7 +713,8 @@ private struct SequenceRecallView: View {
         totalDigitsShown += length
         answer = ""
 
-        revealDuration = memorisationTime
+        let extraTime = Double(max(0, length - 3)) * 0.2
+        revealDuration = min(6.0, memorisationTime + extraTime)
         revealDeadline = Date().addingTimeInterval(revealDuration)
         phase = .showing
 
@@ -687,6 +753,9 @@ private struct SequenceRecallView: View {
     }
 
     private func finishSession() {
+        guard !sessionSaved else { return }
+        sessionSaved = true
+
         let session = MemorySession(
             date: Date(),
             activity: "Sequence Recall",

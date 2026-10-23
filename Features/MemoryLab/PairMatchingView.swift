@@ -181,7 +181,7 @@ struct PairMatchingView: View {
 
                 Text("Pair Matching")
                     .font(.system(size: 28, weight: .bold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(NeuroTapStyle.primaryText)
             }
 
             Spacer()
@@ -195,7 +195,7 @@ struct PairMatchingView: View {
             } label: {
                 Image(systemName: "xmark")
                     .font(.headline)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(NeuroTapStyle.primaryText)
                     .frame(width: 40, height: 40)
                     .background(NeuroTapStyle.surface, in: Circle())
             }
@@ -212,7 +212,7 @@ struct PairMatchingView: View {
             VStack(alignment: .leading, spacing: 18) {
                 Text("Choose your challenge")
                     .font(.title2.bold())
-                    .foregroundStyle(.white)
+                    .foregroundStyle(NeuroTapStyle.primaryText)
 
                 Text("Remember where each symbol appears. Match every pair before time runs out.")
                     .font(.subheadline)
@@ -235,7 +235,7 @@ struct PairMatchingView: View {
                             VStack(alignment: .leading, spacing: 5) {
                                 Text(option.rawValue)
                                     .font(.headline)
-                                    .foregroundStyle(.white)
+                                    .foregroundStyle(NeuroTapStyle.primaryText)
 
                                 Text(option.description)
                                     .font(.caption)
@@ -304,7 +304,7 @@ struct PairMatchingView: View {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(session.difficulty)
                                     .font(.headline)
-                                    .foregroundStyle(.white)
+                                    .foregroundStyle(NeuroTapStyle.primaryText)
 
                                 Text(
                                     session.completed
@@ -428,7 +428,7 @@ struct PairMatchingView: View {
                 } else {
                     Image(systemName: "sparkle")
                         .font(.system(size: isHard ? 9 : 15))
-                        .foregroundStyle(.white.opacity(0.65))
+                        .foregroundStyle(NeuroTapStyle.primaryText.opacity(0.65))
                 }
             }
             .aspectRatio(1, contentMode: .fit)
@@ -466,7 +466,7 @@ struct PairMatchingView: View {
                     : "Time's Up!"
             )
             .font(.system(size: 30, weight: .bold))
-            .foregroundStyle(.white)
+            .foregroundStyle(NeuroTapStyle.primaryText)
 
             Text(
                 "\(pairsFound) of \(difficulty.pairCount) pairs found"
